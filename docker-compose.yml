@@ -1,0 +1,65 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: ./php-apache
+      dockerfile: Dockerfile
+    container_name: light_house_app
+    restart: unless-stopped
+    ports:
+      - "8375:80"
+    volumes:
+      - ../src:/var/www/html
+      - ./php-apache/vhost.config:/etc/apache2/sites-available/000-default.conf
+    environment:
+      APACHE_DOCUMENT_ROOT: /var/www/html/public
+      XDEBUG_MODE: debug,develop # enable debug and develop features
+      XDEBUG_CONFIG: "client_host=host.docker.internal client_port=9003" # Xdebug to connect to your IDE on port 9003
+    depends_on:
+      - db
+    networks:
+      - laravel
+
+  node:
+    image: node:22-alpine
+    container_name: light_house_node
+    working_dir: /var/www/html
+    volumes:
+      - ../src:/var/www/html
+    ports:
+      - "5173:5173"
+    command: sh -c "npm install && npm run dev"
+    networks:
+      - laravel
+
+  db:
+    image: mysql:8.0
+    container_name: light_house_db
+    restart: unless-stopped
+    ports:
+      - "3550:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: light_house
+      MYSQL_USER: light_house
+      MYSQL_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - laravel
+
+  mailer:
+    image: schickling/mailcatcher
+    container_name: light_house_mailer
+    ports:
+      - 2025:1025
+      - 2080:1080
+    networks:
+      - laravel
+
+networks:
+  laravel:
+
+volumes:
+  db_data:
