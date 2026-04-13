@@ -10,7 +10,7 @@ services:
     ports:
       - "8375:80"
     volumes:
-      - ../src:/var/www/html
+      - ../light-house-src:/var/www/html
       - ./php-apache/vhost.config:/etc/apache2/sites-available/000-default.conf
     environment:
       APACHE_DOCUMENT_ROOT: /var/www/html/public
@@ -26,7 +26,7 @@ services:
     container_name: light_house_node
     working_dir: /var/www/html
     volumes:
-      - ../src:/var/www/html
+      - ../light-house-src:/var/www/html
     ports:
       - "5173:5173"
     command: sh -c "npm install && npm run dev"
